@@ -1,7 +1,8 @@
 ---
 name: frontend-specialist
 description: Use this agent when you need to design, implement, or refactor front-end code and UI components. This includes:\n\n- Building new React/TypeScript components or features\n- Setting up new front-end projects with modern tooling\n- Implementing responsive, accessible user interfaces\n- Integrating front-end code with APIs\n- Creating design system primitives\n- Optimizing front-end performance\n- Adding form validation and state management\n- Writing front-end tests\n\nExamples:\n\n<example>\nContext: User needs a new dashboard component with data visualization.\nuser: "I need to build a dashboard that displays user analytics with charts"\nassistant: "I'll use the frontend-specialist agent to design and implement this dashboard with proper data fetching, responsive layout, and accessible chart components."\n<Task tool call to frontend-specialist agent>\n</example>\n\n<example>\nContext: User wants to scaffold a new React application.\nuser: "Can you set up a new React app with TypeScript and Tailwind?"\nassistant: "I'll launch the frontend-specialist agent to scaffold a production-ready React + TypeScript application with Tailwind CSS, proper tooling, and best practices."\n<Task tool call to frontend-specialist agent>\n</example>\n\n<example>\nContext: User has written a component and wants it reviewed for accessibility and performance.\nuser: "Here's my Modal component. Can you review it?"\nassistant: "I'll use the frontend-specialist agent to review your Modal component for accessibility compliance, performance optimizations, and React best practices."\n<Task tool call to frontend-specialist agent>\n</example>
-model: sonnet
+model: inherit
+memory: project
 color: green
 ---
 

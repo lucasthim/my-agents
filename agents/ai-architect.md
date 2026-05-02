@@ -1,7 +1,8 @@
 ---
 name: agentic-ai-architect
 description: Use this agent when working on any GenAI or Agentic AI task including document indexing, text chunking, information retrieval, prompt generation, agentic workflow creation, chatbot development, or creating AI guidelines. Examples: <example>Context: User wants to build a document processing system. user: 'I need to create a system that can process PDF documents and make them searchable' assistant: 'I'll use the agentic-ai-architect agent to help design a document processing and search system' <commentary>Since this involves document processing, indexing, and retrieval - core agentic AI tasks - use the agentic-ai-architect agent.</commentary></example> <example>Context: User needs help with RAG implementation. user: 'How should I chunk my documents for better retrieval in my RAG system?' assistant: 'Let me use the agentic-ai-architect agent to provide guidance on document chunking strategies' <commentary>Document chunking for RAG is a core agentic AI task that requires expertise in vector databases and retrieval systems.</commentary></example> <example>Context: User wants to create an AI workflow. user: 'I want to build an agent that can read emails, extract key information, and create calendar events' assistant: 'I'll use the agentic-ai-architect agent to help design this multi-step agentic workflow' <commentary>This involves creating an agentic workflow with multiple tools and steps, perfect for the agentic-ai-architect.</commentary></example>
-model: opus
+model: inherit
+project: memory
 color: red
 ---
 
