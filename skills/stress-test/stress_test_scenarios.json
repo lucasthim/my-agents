@@ -1,0 +1,340 @@
+{
+  "test_user": {
+    "user_id": "stress-test-user",
+    "email_address": "stress-test@stress.settlemate.io",
+    "name": "Stress Test User"
+  },
+  "merchants": [
+    {
+      "name": "StressScenario Electronics Hub",
+      "normalized_name": "stressscenario electronics hub"
+    },
+    {
+      "name": "StressScenario Fashion Outlet",
+      "normalized_name": "stressscenario fashion outlet"
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "same_merchant_shared_upc",
+      "weight": 0.30,
+      "description": "Same merchant + same product UPCs across all tasks \u2014 tests deadlock scenario on concurrent writes to the same Merchant + Product rows",
+      "merchant_name": "StressScenario Electronics Hub",
+      "order_prefix": "STRESS-SAMEMERCH-UPC",
+      "emails": [
+        {
+          "subject_template": "Your order #{order_number} has shipped!",
+          "sender": "orders@stressscenario-electronics.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Order Confirmation</h2><p>Thank you for your purchase! Your order <strong>#{order_number}</strong> has been confirmed and is being prepared for shipment.</p><h3>Shipping Details</h3><p><strong>Ship to:</strong> John Smith<br>123 Main Street, Apt 4B<br>Austin, TX 78701<br>United States</p><p><strong>Shipping Method:</strong> Standard Shipping (5-7 business days)</p><p><strong>Tracking Number:</strong> 1Z999AA10123456784</p><h3>Order Summary</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $5.99</p><p>Tax: $8.17</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment</h3><p>Visa ending in 4242</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">If you have questions about your order, please contact our customer service team at support@stressscenario-electronics.com or call 1-800-555-0199.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Wireless Bluetooth Earbuds Pro",
+              "upc": "STRESS-SHARED-UPC-001",
+              "price": 39.99,
+              "quantity": 1
+            },
+            {
+              "product_name": "StressScenario Solar Charger Power Bank 40000mAh",
+              "upc": "STRESS-SHARED-UPC-002",
+              "price": 49.99,
+              "quantity": 1
+            },
+            {
+              "product_name": "StressScenario Smart Plug Power Strip",
+              "upc": "STRESS-SHARED-UPC-003",
+              "price": 46.80,
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "subject_template": "Order #{order_number} confirmed - thank you for shopping with us!",
+          "sender": "noreply@stressscenario-electronics.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Order Confirmation</h2><p>Hi there! We're excited to let you know that your order <strong>#{order_number}</strong> has been received and is now being processed.</p><h3>Delivery Information</h3><p><strong>Ship to:</strong> Sarah Johnson<br>456 Oak Avenue<br>Denver, CO 80202<br>United States</p><p><strong>Estimated Delivery:</strong> 3-5 business days</p><p><strong>Tracking Number:</strong> 9400111899223100287654</p><h3>Items Ordered</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $0.00 (Free)</p><p>Tax: $7.65</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment Method</h3><p>Mastercard ending in 8901</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">Need help? Contact us at help@stressscenario-electronics.com or call 1-888-555-0234.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Wireless Bluetooth Earbuds Pro",
+              "upc": "STRESS-SHARED-UPC-001",
+              "price": 39.99,
+              "quantity": 1
+            },
+            {
+              "product_name": "StressScenario Solar Charger Power Bank 40000mAh",
+              "upc": "STRESS-SHARED-UPC-002",
+              "price": 49.99,
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "same_merchant_unique_product",
+      "weight": 0.25,
+      "description": "Same merchant but each task has unique products \u2014 tests concurrent Merchant row access with no Product row contention",
+      "merchant_name": "StressScenario Electronics Hub",
+      "order_prefix": "STRESS-SAMEMERCH-UNIQ",
+      "items_template": "unique_per_task",
+      "emails": [
+        {
+          "subject_template": "Your order #{order_number} is confirmed!",
+          "sender": "orders@stressscenario-electronics.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Order Confirmation</h2><p>Thank you for your purchase! Your order <strong>#{order_number}</strong> has been confirmed and is being prepared for shipment.</p><h3>Shipping Details</h3><p><strong>Ship to:</strong> Michael Brown<br>789 Pine Road, Suite 12<br>Seattle, WA 98101<br>United States</p><p><strong>Shipping Method:</strong> Express Shipping (2-3 business days)</p><p><strong>Tracking Number:</strong> 1Z999BB20234567891</p><h3>Order Summary</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $9.99</p><p>Tax: $6.42</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment</h3><p>Visa ending in 3156</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">If you have questions about your order, please contact our customer service team at support@stressscenario-electronics.com or call 1-800-555-0199.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Bluetooth Speaker Model",
+              "upc": "STRESS-UNIQ-001",
+              "price": 29.99,
+              "quantity": 1,
+              "unique_per_task": true
+            },
+            {
+              "product_name": "StressScenario USB-C Hub Adapter",
+              "upc": "STRESS-UNIQ-002",
+              "price": 15.99,
+              "quantity": 1,
+              "unique_per_task": true
+            }
+          ],
+          "items_templates": [
+            {
+              "product_name_template": "StressScenario Bluetooth Speaker Model-{task_id}",
+              "upc_template": "STRESS-UNIQ-{task_id}-001",
+              "price": 29.99,
+              "quantity": 1
+            },
+            {
+              "product_name_template": "StressScenario USB-C Hub Adapter-{task_id}",
+              "upc_template": "STRESS-UNIQ-{task_id}-002",
+              "price": 15.99,
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "subject_template": "Shipping notification for order #{order_number}",
+          "sender": "shipping@stressscenario-electronics.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Your Order Has Shipped!</h2><p>Great news! Your order <strong>#{order_number}</strong> is on its way.</p><h3>Delivery Information</h3><p><strong>Ship to:</strong> Emily Davis<br>321 Elm Street<br>Portland, OR 97201<br>United States</p><p><strong>Shipping Method:</strong> Priority Shipping (1-2 business days)</p><p><strong>Tracking Number:</strong> 9261290100130736371689</p><h3>Items in This Shipment</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $12.99</p><p>Tax: $9.11</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment Method</h3><p>American Express ending in 5678</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">Track your package at stressscenario-electronics.com/tracking or call 1-800-555-0199.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Phone Case Defender Series",
+              "upc": "STRESS-UNIQ-003",
+              "price": 19.99,
+              "quantity": 1,
+              "unique_per_task": true
+            },
+            {
+              "product_name": "StressScenario LED Light Strip Connector Kit",
+              "upc": "STRESS-UNIQ-004",
+              "price": 36.99,
+              "quantity": 1,
+              "unique_per_task": true
+            },
+            {
+              "product_name": "StressScenario Charger Cord Universal Adapter",
+              "upc": "STRESS-UNIQ-005",
+              "price": 8.99,
+              "quantity": 1,
+              "unique_per_task": true
+            }
+          ],
+          "items_templates": [
+            {
+              "product_name_template": "StressScenario Phone Case Defender Series-{task_id}",
+              "upc_template": "STRESS-UNIQ-{task_id}-003",
+              "price": 19.99,
+              "quantity": 1
+            },
+            {
+              "product_name_template": "StressScenario LED Light Strip Connector Kit-{task_id}",
+              "upc_template": "STRESS-UNIQ-{task_id}-004",
+              "price": 36.99,
+              "quantity": 1
+            },
+            {
+              "product_name_template": "StressScenario Charger Cord Universal Adapter-{task_id}",
+              "upc_template": "STRESS-UNIQ-{task_id}-005",
+              "price": 8.99,
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unique_merchant_unique_product",
+      "weight": 0.25,
+      "description": "Each task gets its own merchant and unique products \u2014 zero-contention baseline for comparison",
+      "merchant_name": "StressScenario Brand Baseline",
+      "merchant_name_template": "StressScenario Brand {task_id}",
+      "order_prefix": "STRESS-UNIQMERCH",
+      "items_template": "unique_per_task",
+      "emails": [
+        {
+          "subject_template": "Thank you for your purchase! Order #{order_number}",
+          "sender": "orders@stressscenario-brand.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Order Confirmation</h2><p>Thank you for your purchase! Your order <strong>#{order_number}</strong> has been confirmed and is being prepared for shipment.</p><h3>Shipping Details</h3><p><strong>Ship to:</strong> Robert Wilson<br>567 Cedar Lane<br>Nashville, TN 37201<br>United States</p><p><strong>Shipping Method:</strong> Standard Shipping (5-7 business days)</p><p><strong>Tracking Number:</strong> 1Z999CC30345678902</p><h3>Order Summary</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $7.49</p><p>Tax: $14.21</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment</h3><p>Visa ending in 7890</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">If you have questions about your order, please contact our customer service team at support@stressscenario-brand.com or call 1-800-555-0345.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Sewing Quilting Machine Deluxe",
+              "upc": "STRESS-BRAND-001",
+              "price": 176.27,
+              "quantity": 1,
+              "unique_per_task": true
+            },
+            {
+              "product_name": "StressScenario Electric Spin Scrubber Bathroom",
+              "upc": "STRESS-BRAND-002",
+              "price": 23.98,
+              "quantity": 1,
+              "unique_per_task": true
+            }
+          ],
+          "items_templates": [
+            {
+              "product_name_template": "StressScenario Sewing Quilting Machine Deluxe-{task_id}",
+              "upc_template": "STRESS-BRAND-{task_id}-001",
+              "price": 176.27,
+              "quantity": 1
+            },
+            {
+              "product_name_template": "StressScenario Electric Spin Scrubber Bathroom-{task_id}",
+              "upc_template": "STRESS-BRAND-{task_id}-002",
+              "price": 23.98,
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "subject_template": "Order #{order_number} - shipment confirmed",
+          "sender": "shipping@stressscenario-brand.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Shipment Confirmation</h2><p>Your order <strong>#{order_number}</strong> has shipped and is on its way to you!</p><h3>Delivery Information</h3><p><strong>Ship to:</strong> Lisa Anderson<br>890 Maple Drive<br>Charlotte, NC 28201<br>United States</p><p><strong>Estimated Delivery:</strong> 4-6 business days</p><p><strong>Tracking Number:</strong> 9400111899223100398765</p><h3>Items Shipped</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $0.00 (Free)</p><p>Tax: $5.88</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment Method</h3><p>Discover ending in 4321</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">Questions? Reach us at help@stressscenario-brand.com or 1-877-555-0456.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Privacy Window Film Decorative",
+              "upc": "STRESS-BRAND-003",
+              "price": 12.99,
+              "quantity": 2,
+              "unique_per_task": true
+            },
+            {
+              "product_name": "StressScenario Shower Caddy Organizer 6-Piece",
+              "upc": "STRESS-BRAND-004",
+              "price": 17.99,
+              "quantity": 1,
+              "unique_per_task": true
+            },
+            {
+              "product_name": "StressScenario Scented Candle Artisan Blend",
+              "upc": "STRESS-BRAND-005",
+              "price": 29.95,
+              "quantity": 1,
+              "unique_per_task": true
+            }
+          ],
+          "items_templates": [
+            {
+              "product_name_template": "StressScenario Privacy Window Film Decorative-{task_id}",
+              "upc_template": "STRESS-BRAND-{task_id}-003",
+              "price": 12.99,
+              "quantity": 2
+            },
+            {
+              "product_name_template": "StressScenario Shower Caddy Organizer 6-Piece-{task_id}",
+              "upc_template": "STRESS-BRAND-{task_id}-004",
+              "price": 17.99,
+              "quantity": 1
+            },
+            {
+              "product_name_template": "StressScenario Scented Candle Artisan Blend-{task_id}",
+              "upc_template": "STRESS-BRAND-{task_id}-005",
+              "price": 29.95,
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "duplicate_order",
+      "weight": 0.10,
+      "description": "Same merchant, fixed order number, same products sent multiple times \u2014 tests idempotency and deduplication in save_purchase_with_items",
+      "merchant_name": "StressScenario Electronics Hub",
+      "order_prefix": "STRESS-DUPE-FIXED-001",
+      "emails": [
+        {
+          "subject_template": "Your order #STRESS-DUPE-FIXED-001 has shipped!",
+          "sender": "orders@stressscenario-electronics.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Order Confirmation</h2><p>Thank you for your purchase! Your order <strong>#STRESS-DUPE-FIXED-001</strong> has been confirmed and is being prepared for shipment.</p><h3>Shipping Details</h3><p><strong>Ship to:</strong> David Martinez<br>234 Birch Boulevard<br>Miami, FL 33101<br>United States</p><p><strong>Shipping Method:</strong> Standard Shipping (5-7 business days)</p><p><strong>Tracking Number:</strong> 1Z999DD40456789013</p><h3>Order Summary</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody><tr><td style=\"padding: 10px; border-bottom: 1px solid #eee;\">StressScenario Wireless Bluetooth Earbuds Pro<br><small>SKU: ELEC-BT-PRO | UPC: STRESS-SHARED-UPC-001</small></td><td style=\"padding: 10px; text-align: center; border-bottom: 1px solid #eee;\">1</td><td style=\"padding: 10px; text-align: right; border-bottom: 1px solid #eee;\">$39.99</td></tr><tr><td style=\"padding: 10px; border-bottom: 1px solid #eee;\">StressScenario Solar Charger Power Bank 40000mAh<br><small>SKU: ELEC-SC-40K | UPC: STRESS-SHARED-UPC-002</small></td><td style=\"padding: 10px; text-align: center; border-bottom: 1px solid #eee;\">1</td><td style=\"padding: 10px; text-align: right; border-bottom: 1px solid #eee;\">$49.99</td></tr></tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: $89.98</p><p>Shipping: $5.99</p><p>Tax: $7.20</p><p><strong>Total: $103.17</strong></p></div><h3>Payment</h3><p>Visa ending in 4242</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">If you have questions about your order, please contact our customer service team at support@stressscenario-electronics.com or call 1-800-555-0199.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Wireless Bluetooth Earbuds Pro",
+              "upc": "STRESS-SHARED-UPC-001",
+              "price": 39.99,
+              "quantity": 1
+            },
+            {
+              "product_name": "StressScenario Solar Charger Power Bank 40000mAh",
+              "upc": "STRESS-SHARED-UPC-002",
+              "price": 49.99,
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cross_merchant_shared_upc",
+      "weight": 0.10,
+      "description": "Different merchant but same UPCs as scenario 1 \u2014 tests that the same product (by UPC) can be associated with different merchants without deadlock",
+      "merchant_name": "StressScenario Fashion Outlet",
+      "order_prefix": "STRESS-CROSSMERCH-UPC",
+      "emails": [
+        {
+          "subject_template": "Your order #{order_number} from StressScenario Fashion Outlet is confirmed!",
+          "sender": "orders@stressscenario-fashion.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Order Confirmation</h2><p>Thank you for shopping with us! Your order <strong>#{order_number}</strong> has been confirmed.</p><h3>Shipping Details</h3><p><strong>Ship to:</strong> Jessica Thompson<br>678 Walnut Way<br>San Francisco, CA 94102<br>United States</p><p><strong>Shipping Method:</strong> Ground Shipping (5-7 business days)</p><p><strong>Tracking Number:</strong> 1Z999EE50567890124</p><h3>Order Summary</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $6.99</p><p>Tax: $11.52</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment</h3><p>Mastercard ending in 2468</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">Questions about your order? Contact our style team at help@stressscenario-fashion.com or call 1-800-555-0567.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Premium Waterproof Boots",
+              "upc": "STRESS-SHARED-UPC-001",
+              "price": 95.00,
+              "quantity": 1
+            },
+            {
+              "product_name": "StressScenario Herringbone Stretch Cotton Shorts",
+              "upc": "STRESS-SHARED-UPC-002",
+              "price": 78.00,
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "subject_template": "Order #{order_number} - your items have shipped!",
+          "sender": "shipping@stressscenario-fashion.com",
+          "body_template": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\"><div style=\"background-color: #f8f9fa; padding: 20px; text-align: center;\"><h1 style=\"color: #333;\">{merchant_name}</h1></div><div style=\"padding: 20px;\"><h2>Your Order Has Shipped!</h2><p>Good news! Your order <strong>#{order_number}</strong> is on its way to you.</p><h3>Delivery Information</h3><p><strong>Ship to:</strong> Amanda Garcia<br>901 Spruce Court<br>Chicago, IL 60601<br>United States</p><p><strong>Estimated Delivery:</strong> 3-5 business days</p><p><strong>Tracking Number:</strong> 9261290100130736482790</p><h3>Items in This Shipment</h3><table style=\"width: 100%; border-collapse: collapse;\"><thead><tr style=\"background-color: #f1f1f1;\"><th style=\"padding: 10px; text-align: left; border-bottom: 1px solid #ddd;\">Item</th><th style=\"padding: 10px; text-align: center; border-bottom: 1px solid #ddd;\">Qty</th><th style=\"padding: 10px; text-align: right; border-bottom: 1px solid #ddd;\">Price</th></tr></thead><tbody>{items_html}</tbody></table><div style=\"margin-top: 15px; text-align: right;\"><p>Subtotal: ${total_amount}</p><p>Shipping: $0.00 (Free over $50)</p><p>Tax: $6.88</p><p><strong>Total: ${total_amount}</strong></p></div><h3>Payment Method</h3><p>Visa ending in 1357</p><hr style=\"margin: 20px 0;\"><p style=\"font-size: 12px; color: #666;\">Need to return an item? Visit stressscenario-fashion.com/returns or call 1-800-555-0567.</p></div></body></html>",
+          "items": [
+            {
+              "product_name": "StressScenario Off Shoulder Mesh Dress Elegant",
+              "upc": "STRESS-SHARED-UPC-001",
+              "price": 39.00,
+              "quantity": 1
+            },
+            {
+              "product_name": "StressScenario Rhinestone Cluster Gold Tone Necklace",
+              "upc": "STRESS-SHARED-UPC-002",
+              "price": 25.00,
+              "quantity": 1
+            },
+            {
+              "product_name": "StressScenario No Show Comfort Socks 6-Pack",
+              "upc": "STRESS-SHARED-UPC-003",
+              "price": 13.99,
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
