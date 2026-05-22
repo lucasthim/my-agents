@@ -31,6 +31,24 @@ Heavy backend patterns (repositories, services, dependency-injection chains, cus
 - A simple env-dict config beats a full `BaseSettings` class until you have secrets to load or environments to switch between.
 - A single-stage Dockerfile beats multi-stage builds for prototypes and internal tools.
 
+**File and folder layout — keep it shallow:**
+- Start with a flat structure. Add subfolders only when a single directory grows beyond ~7-10 files OR a clear sub-domain emerges with its own cohesive set of modules.
+- Don't create `models/`, `schemas/`, `services/`, `repositories/`, `utils/` folders by default. Co-locate related code in the same module until size or reuse forces a split.
+- Don't split one logical thing across many files for "separation of concerns." A 200-line module with the route, its Pydantic models, and its query is easier to read than five 40-line files that import from each other.
+- Don't introduce a Pydantic schema (or a second one — Create/Update/Read variants) unless the wire format genuinely differs from the internal shape, or validation rules differ. One model serving multiple endpoints is fine.
+- One file per route group is usually the right granularity, not one file per endpoint.
+
+**Avoid abstracting trivial, human-readable code into functions:**
+A function call costs the reader a jump and a naming decision. It only pays off when it hides real complexity, is reused, or names a non-obvious concept. Do NOT extract:
+- Dict construction or remapping (`{"id": x.id, "name": x.name}`) — write it inline.
+- A single `.get()`, attribute access, or one-line transform on an object.
+- Pulling one field out of a list (`items[0].id`, `next(i for i in items if ...)`) — readable inline.
+- A list/dict comprehension that fits on one line.
+- A one-line wrapper around a stdlib or library call that doesn't add validation, error handling, or naming clarity.
+- "Helper" functions called from exactly one place that are just the next 3 lines of the caller, indented differently.
+
+DO extract when: the logic is reused ≥2 times, the name genuinely clarifies intent that the code doesn't, OR the block exceeds ~10 lines of cohesive work. Inlined code that reads top-to-bottom beats a flat call tree of one-liners every time.
+
 When in doubt, ship the simpler version. Refactoring to add a layer when you need it is cheap; ripping out unnecessary scaffolding once code depends on it is not.
 
 **CRITICAL FIRST STEP - Project Context Discovery:**
@@ -159,6 +177,16 @@ pytest --cov=. --cov-report=html --cov-report=term
 6. Test error scenarios and edge cases
 7. Verify security measures
 8. Check performance and optimize if needed
+9. **Simplification pass — re-read your own diff** and challenge it:
+   - Any folder or file that holds <3 things? Collapse it back into its parent.
+   - Any function called from exactly one place that's <10 lines? Inline it.
+   - Any Pydantic model that duplicates another with one field renamed? Merge them.
+   - Any `try/except` around code that can't actually raise the caught exception? Remove it.
+   - Any abstraction (class, factory, dependency, config knob) without a current caller justifying it? Delete it.
+   - Any one-line helper that just wraps a stdlib call or attribute access? Replace the call site with the original expression.
+   - Any comment explaining WHAT the code does instead of WHY? Delete the comment, rename the identifier if needed.
+   - Did you split a logical unit across multiple files when one would read better? Re-merge.
+   If you removed nothing in this pass, you either nailed it on the first try (rare) or you didn't look hard enough (more likely).
 
 **Phase 4: Documentation & Deployment**
 1. Write comprehensive docstrings
