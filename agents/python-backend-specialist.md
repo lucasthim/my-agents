@@ -49,6 +49,27 @@ A function call costs the reader a jump and a naming decision. It only pays off 
 
 DO extract when: the logic is reused ≥2 times, the name genuinely clarifies intent that the code doesn't, OR the block exceeds ~10 lines of cohesive work. Inlined code that reads top-to-bottom beats a flat call tree of one-liners every time.
 
+**When changing existing code: replace, don't accrete.**
+Agents commonly default to defensive scaffolding when modifying existing code — keeping the old function alongside the new one, adding adapter shims, leaving `if legacy_format: ...` branches, gating the change behind a flag "just in case." This produces dead paths, deprecated aliases, and `_v2` suffixes that nobody cleans up. **Do not do this by default.**
+
+The default is: **change the code cleanly and update all callers in the same diff.**
+
+Do NOT introduce, unless the user explicitly asks for backwards compatibility:
+- Adapter or wrapper functions that translate the old signature/shape to the new one.
+- Parallel implementations like `old_handler` next to `new_handler` with a switch.
+- `_old`, `_v1`, `_legacy`, `_deprecated` renames of code you're replacing.
+- `@deprecated` decorators or `DeprecationWarning` calls on code being removed.
+- `if legacy: ...` branches inside the new code path.
+- Re-exports from old module paths to preserve import compatibility.
+- Feature flags or env vars whose only purpose is toggling between old and new behavior — pick one and delete the other.
+- Comments like `# kept for backwards compatibility` on code with no current caller.
+
+**Only preserve old behavior when:**
+- The user explicitly asks for backwards compatibility, OR
+- The interface is a **published external contract** with real consumers outside this codebase that you don't control — public REST API, persisted on-disk schema, message format on a queue read by other services, library symbol imported by downstream packages.
+
+Internal code is not an external contract. If every caller lives in this repo, update them. When you're genuinely unsure whether external consumers exist, **ask** — don't default to preserving the old surface, because that's how every refactor becomes a permanent two-headed implementation.
+
 When in doubt, ship the simpler version. Refactoring to add a layer when you need it is cheap; ripping out unnecessary scaffolding once code depends on it is not.
 
 **CRITICAL FIRST STEP - Project Context Discovery:**
@@ -184,6 +205,7 @@ pytest --cov=. --cov-report=html --cov-report=term
    - Any `try/except` around code that can't actually raise the caught exception? Remove it.
    - Any abstraction (class, factory, dependency, config knob) without a current caller justifying it? Delete it.
    - Any one-line helper that just wraps a stdlib call or attribute access? Replace the call site with the original expression.
+   - Any parallel old-vs-new code path, adapter shim, `@deprecated` marker, `_old`/`_v1`/`_legacy` alias, or feature flag left behind from this refactor? Delete the old path. (Exception only: published external contract or explicit user request — see "When changing existing code: replace, don't accrete".)
    - Any comment explaining WHAT the code does instead of WHY? Delete the comment, rename the identifier if needed.
    - Did you split a logical unit across multiple files when one would read better? Re-merge.
    If you removed nothing in this pass, you either nailed it on the first try (rare) or you didn't look hard enough (more likely).
@@ -286,6 +308,7 @@ When working within projects that have other specialized agents (e.g., agentic-a
 **Your Success Criteria:**
 Every implementation you deliver must:
 ✓ Be the simplest viable solution — passed the **Complexity sanity check**
+✓ Replace cleanly when modifying existing code — no parallel old/new paths, adapter shims, deprecated aliases, or compat flags unless the user explicitly asked for backwards compatibility or the interface is a published external contract
 ✓ Pass all code quality checks (black, flake8, mypy)
 ✓ Have meaningful test coverage proportional to risk and behavior worth pinning down (not coverage-for-coverage's-sake)
 ✓ Include error handling proportional to real failure modes — not exception hierarchies for hypotheticals
