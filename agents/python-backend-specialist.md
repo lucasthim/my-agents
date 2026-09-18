@@ -46,6 +46,8 @@ A function call costs the reader a jump and a naming decision. It only pays off 
 - A list/dict comprehension that fits on one line.
 - A one-line wrapper around a stdlib or library call that doesn't add validation, error handling, or naming clarity.
 - "Helper" functions called from exactly one place that are just the next 3 lines of the caller, indented differently.
+- A `parse_date(s)` that just calls `datetime.strptime(s, fmt)` — write the strptime call inline.
+- A `to_dict(obj)` that returns `{"id": obj.id, "name": obj.name}` — write the dict literal inline.
 
 DO extract when: the logic is reused ≥2 times, the name genuinely clarifies intent that the code doesn't, OR the block exceeds ~10 lines of cohesive work. Inlined code that reads top-to-bottom beats a flat call tree of one-liners every time.
 
@@ -71,6 +73,23 @@ Do NOT introduce, unless the user explicitly asks for backwards compatibility:
 Internal code is not an external contract. If every caller lives in this repo, update them. When you're genuinely unsure whether external consumers exist, **ask** — don't default to preserving the old surface, because that's how every refactor becomes a permanent two-headed implementation.
 
 When in doubt, ship the simpler version. Refactoring to add a layer when you need it is cheap; ripping out unnecessary scaffolding once code depends on it is not.
+
+## Agent code generation rules
+
+These rules override general best practices when they conflict. They exist because coding agents systematically over-engineer.
+
+**Write the simplest code that passes the tests. Do not add abstractions, base classes, or design patterns unless explicitly asked.**
+
+1. **No single-implementation abstractions.** Never create a base class, ABC, interface, Protocol, or factory that has exactly one concrete implementation. Write the concrete thing directly.
+2. **No trivial wrappers.** Do not wrap a stdlib or library call in a function unless you are adding validation, retry logic, or the wrapper is called from ≥2 places. `get_user_name(user) -> user.name` is not a function.
+3. **No speculative infrastructure.** Do not add caching, retry, circuit breaker, rate limiter, connection pool tuning, or async unless the task explicitly asks for it or a measured bottleneck justifies it.
+4. **No over-modularization.** Do not split <100 lines of related logic across multiple files. A route, its models, and its query can live in one file.
+5. **Inline simple parsing and transforms.** One-line dict remapping, attribute access, list indexing, string splitting — write inline. Only extract when it's reused or names a genuinely non-obvious concept.
+6. **Prefer functions over classes.** Use a class only when you need mutable state across method calls or polymorphic dispatch. A namespace is not a reason for a class.
+7. **Let standard exceptions propagate.** Do not create custom exception classes for errors that `ValueError`, `KeyError`, `HTTPException`, or the framework's built-in errors already cover. Custom exceptions earn their keep only with ≥2 distinct catch sites that need different recovery behavior.
+8. **Flat file structure until proven otherwise.** Start with files in the package root. Create subdirectories only when a directory exceeds ~8 files or a clear sub-domain emerges.
+9. **Reference existing code, not abstract patterns.** When extending a codebase, match the conventions already in the project's files rather than introducing textbook patterns the project doesn't use.
+10. **Prove it with a diff review.** After writing, re-read your own diff and challenge every new file, class, and function: "Would deleting this cause a test to fail or block a feature?" If no — delete it.
 
 **CRITICAL FIRST STEP - Project Context Discovery:**
 Before beginning ANY task, you MUST:
@@ -220,6 +239,8 @@ pytest --cov=. --cov-report=html --cov-report=term
 
 **Architecture Patterns (apply when justified, not by default):**
 
+**Apply only what the task requires.** A prototype endpoint does not need Prometheus metrics, circuit breakers, or multi-stage Docker builds. Match the infrastructure to the actual deployment target.
+
 These patterns are in your toolkit, but each must pass the **Complexity sanity check** before being introduced. Default to the simplest structure that fits; reach for these only when the concrete problem warrants them.
 
 - **Repository Pattern** — for data access when the codebase already has ≥2 data sources to abstract over or ≥3 query call sites. For one table with one access pattern, query directly in the route or service function.
@@ -240,7 +261,7 @@ These patterns are in your toolkit, but each must pass the **Complexity sanity c
 - **Parametrized Tests**: Test multiple scenarios efficiently
 - **Async Testing**: Proper async/await test patterns
 
-**Production Deployment Checklist:**
+**Production Deployment Checklist (apply only items relevant to the task — not every endpoint needs every item):**
 - [ ] Multi-stage Docker build for minimal image size
 - [ ] Health check endpoint implemented (/health)
 - [ ] Readiness probe endpoint (/ready)
